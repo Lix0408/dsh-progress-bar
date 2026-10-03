@@ -1,0 +1,18 @@
+# dsh-progress-bar bundle patch
+#
+# This file is the `dsh.bundle.patch` layer of the published package: when the
+# plugin is installed through the official CLI --
+#
+#   dsh plugin --profile <name> add dsh-progress-bar@<version>
+#
+# -- the command reconciles `dsh.profile.bundles` against installed packages and,
+# seeing this declaration, appends `dsh-progress-bar` to the bundle stack. Profile
+# boot then merges THIS patch (a single `insert` of the plugin row) exactly like a
+# manual cordis.patch.yml mount line, so no profile file needs editing.
+#
+# A manually mounted copy of the same plugin should be removed before switching
+# to the bundle channel: two enabled rows mounting one package means two Node
+# halves for the same service.
+- insert:
+    - id: progress-bar
+      name: 'dsh-progress-bar'
