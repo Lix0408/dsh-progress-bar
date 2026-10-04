@@ -1,6 +1,6 @@
 {
   "name": "dsh-progress-bar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Session-header progress badge for DeepSeek Harness: a real completion percentage from the session's todos projection, plus a read-only background-job list. Shows no percentage it cannot prove.",
   "type": "module",
   "main": "lib/index.js",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   IconChevronDownOutlineRegular,
   StateDot,
@@ -69,6 +69,41 @@ const JOB_DOT: Record<JobStatus, 'ongoing' | 'warning' | 'done' | 'error'> = {
 }
 
 /**
+ * Everything the wave geometry needs. `ds`/`pad` are read back from the computed
+ * `--ds`/`--pad` of whichever size class is applied, so the stylesheet stays the
+ * single source of truth for the size tiers.
+ */
+interface TrackMetrics {
+  width: number
+  ds: number
+  pad: number
+}
+
+/** Fallback before the first measurement; mirrors the `.track` defaults in the CSS. */
+const DEFAULT_METRICS: TrackMetrics = { width: 0, ds: 24, pad: 7 }
+
+/**
+ * Water-head and avatar positions, ported from the prototype's `geometry()`.
+ *
+ * The water head leads the ds centre by `c0 · p` (`c0 = pad + ds/2`), so the
+ * avatar starts half-submerged and sinks deeper as p grows — fully under water
+ * past p = 0.64 at the header tier. At 0% the water is one `c0`-wide pool and
+ * the avatar's left edge sits `pad` from the track's left end; at 100% the water
+ * fills the track and the avatar's right edge sits `pad` from the right end, so
+ * neither endpoint ever clips the avatar.
+ * @param metrics - measured track width plus the active tier's `ds` and `pad`.
+ * @param p - progress in 0..1.
+ * @returns fill width and avatar translate x, in px.
+ */
+function geometry({ width, ds, pad }: TrackMetrics, p: number): { fillW: number; x: number } {
+  const c0 = pad + ds / 2
+  const c1 = Math.max(c0, width - pad - ds / 2)
+  const center = c0 + (c1 - c0) * p
+  const fillW = c0 + (Math.max(c0, width) - c0) * p
+  return { fillW, x: center - ds / 2 }
+}
+
+/**
  * Session-header progress control.
  *
  * The percentage has exactly one source: the session's `todos` projection, so
@@ -99,6 +134,8 @@ export function ProgressBadge({
   const [now, setNow] = useState(() => Date.now())
   const rootRef = useRef<HTMLDivElement>(null)
   const [panelShift, setPanelShift] = useState(0)
+  const trackRef = useRef<HTMLSpanElement>(null)
+  const [metrics, setMetrics] = useState<TrackMetrics>(DEFAULT_METRICS)
 
   useDismissOnOutsidePointer(rootRef, open, setOpen)
   useEffect(() => watchRows(sessionId), [sessionId, watchRows])
@@ -109,6 +146,37 @@ export function ProgressBadge({
   const liveRows = useMemo(() => ordered.filter(isLive), [ordered])
   const hasTodos = counts.total > 0
   const visible = hasTodos || running || liveRows.length > 0
+
+  // The fill width and the avatar offset are px values derived from the track's
+  // real width, so the track has to be measured. `--ds`/`--pad` are read back
+  // from the computed style rather than kept in a second tier table. This runs
+  // after `visible` because the track only exists once the badge renders.
+  useEffect(() => {
+    const element = trackRef.current
+    if (element === null) return
+    const measure = () => {
+      const computed = getComputedStyle(element)
+      const ds = Number.parseFloat(computed.getPropertyValue('--ds'))
+      const pad = Number.parseFloat(computed.getPropertyValue('--pad'))
+      const width = element.clientWidth
+      setMetrics((previous) => (
+        previous.width === width
+        && previous.ds === ds
+        && previous.pad === pad
+          ? previous
+          : {
+              width,
+              ds: Number.isFinite(ds) ? ds : DEFAULT_METRICS.ds,
+              pad: Number.isFinite(pad) ? pad : DEFAULT_METRICS.pad,
+            }
+      ))
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [visible])
 
   const durationOf = (job: JobView): string => {
     const parts = splitDuration(elapsedMs(job.startedAt, job.finishedAt, now))
@@ -171,7 +239,10 @@ export function ProgressBadge({
   const triggerLabel = percent !== undefined
     ? t('trigger.aria.tasks', { done: counts.completed, total: counts.total })
     : t('trigger.aria.running')
-  const fillClass = percent !== undefined ? css.meterFill : `${css.meterFill} ${css.meterFillIndeterminate}`
+  // Indeterminate (running, but no to-do list yet) is p = 0: the wave keeps
+  // rolling and the avatar idles at the left end. Never a fabricated percentage.
+  const { fillW, x } = geometry(metrics, (percent ?? 0) / 100)
+  const trackStyle = { '--fillw': `${fillW}px`, '--x': `${x}px` } as CSSProperties
   const barClass = percent !== undefined ? css.barFill : `${css.barFill} ${css.barFillIndeterminate}`
 
   return (
@@ -187,8 +258,25 @@ export function ProgressBadge({
           setOpen((current) => !current)
         }}
       >
-        <span className={css.meter} aria-hidden="true">
-          <span className={fillClass} style={percent === undefined ? undefined : { width: `${percent}%` }} />
+        <span
+          ref={trackRef}
+          className={css.track}
+          style={trackStyle}
+          aria-hidden="true"
+        >
+          <span className={css.fill}>
+            <span className={css.water} />
+            <span className={`${css.wave} ${css.waveFoam}`} />
+            <span className={`${css.wave} ${css.waveFront}`} />
+            <span className={css.surf} />
+          </span>
+          <span className={css.dsSlot}>
+            <span className={css.dsBob}>
+              <span className={css.dsSpin}>
+                <span className={css.dsImg} />
+              </span>
+            </span>
+          </span>
         </span>
         <span className={css.count}>{triggerText}</span>
         <IconChevronDownOutlineRegular size={12} className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
