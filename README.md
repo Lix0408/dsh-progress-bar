@@ -39,7 +39,7 @@ DeepSeek Harness Web 客户端的**会话头部进度控件**：一条横放的 
 
 **实测过**（Playwright 驱动本机 Edge 渲染真实组件 + 真实 CSS 管线）：五个进度值下 **水头与 ds 圆心误差 0.000px**；0% 左缘 / 100% 右缘精确等于 `pad`（100% 那次把自转定格在 rotation=0 才量）；浪花亮边 **2.5–3.0 CSS px** 且在 9 个相位（含 18000/30000ms）偏移恒为 2.984px，两个波浪动画 `startTime` 差 0ms、keyframes 完全相同（**不可能错相**）；`.wave` 盒底与 `.water` 顶边 DOM 上**完全重合**；三档尺寸下水面高度 = 槽高 34%；`prefers-reduced-motion` 下动画数为 0 且静态仍保留完整波形与 3px 浪花边；深浅主题下水体饱和度**完全相同**（固定色、不被主题洗灰）；展开面板 top = root.bottom + 5px、窄窗 400px 时仍夹在视口内（left 20 / right 12）。
 
-**没有实测**：真实 DSH 会话头部的总高（需要已登录的 GUI）；浅色主题下的实际观感；面板内部的 `StateDot`/图标（验证夹具里 `@deepseek-ai/dsh-client-ui-primitives` 是桩件）；`reference/showcase.html` 里两张过程图（`_avatar_variants.png`、`_dsprobe.png`）**源文件未随素材交付**，渲染预览图时把它们设为不可见，其余原样。
+**没有实测**：真实 DSH 会话头部的总高（需要已登录的 GUI）；浅色主题下的实际观感；面板内部的 `StateDot`/图标（验证夹具里 `@deepseek-ai/dsh-client-ui-primitives` 是桩件）。
 
 ---
 
@@ -63,7 +63,7 @@ DeepSeek Harness Web 客户端的**会话头部进度控件**：一条横放的 
 | `docs/preview.png` | 汇总页首屏：实时演示条（定格在 67%）+ 控制栏 |
 | `docs/showcase.png` | 汇总页整页：五进度态 / 三档尺寸 / 深浅主题 / 无白边对照 / 泳姿 |
 
-渲染脚本不随本仓库提供（它属于我的验证工程）。渲染时把两张过程图 `_avatar_variants.png` 与 `_dsprobe.png` 设为不可见 —— 这两个文件**没有随 `reference/` 一起交付**，不处理就会渲染成破图；其余图片原样。
+渲染脚本不随本仓库提供（它属于我的验证工程）。出图时做了两处裁剪：**移除汇总页的「03 设计稿」整节**（3.1 角色形象 / 3.2 头像取景 / 3.3 完整设计稿 / 3.4 可辨识度验证），以及文件清单里两行属于角色创作流水线的条目（`design-final-lite.html`、`_avatar.py`）。`reference/showcase.html` 原件**未改动**，仍保留完整设计过程。
 
 **实机截图待补**：真机头部与展开面板需要已登录的会话才能截，我这边拿不到登录态，所以留空：
 
