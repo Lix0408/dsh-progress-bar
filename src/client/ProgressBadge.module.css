@@ -465,12 +465,640 @@
   .waveFoam,
   .waveFront,
   .dsSpin,
-  .dsBob {
+  .dsBob,
+  .halo {
     animation: none;
+  }
+
+  /* 角标的脉冲由 .root[data-diary] 开启，特异性更高，所以这里必须用
+     !important 压过去（全文件只保留这一个 reduced-motion 块）。 */
+  .root[data-diary] .badge {
+    animation: none !important;
   }
 
   .barFillIndeterminate {
     animation: none;
     transform: none;
   }
+}
+
+/* ============================================================
+   v0.3 · 会话头部席位（绝对定位，不参与布局）+ 三态
+   值与层序取自 reference/design-orb-diary.html 的定稿 CSS。
+   本块在文件末尾，同特异性下覆盖上面的同名规则（源序取胜）。
+   ============================================================ */
+
+/* 席位：right/top 由组件在 useLayoutEffect 里实测后写入 CSS 变量。
+   绝对定位 = 44px 的条不再撑高只有 30px 的 header 行。 */
+.root {
+  position: absolute;
+  right: var(--seat-right, 0px);
+  top: var(--seat-top, 0px);
+  transform: translateY(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+}
+
+.trigger {
+  flex: none;
+}
+
+.track {
+  --tw: 340px;
+  --orb: 32px;
+  --track-h: 44px;
+  --ds: 32px;
+  --pad: 9px;
+  width: var(--tw);
+  height: var(--track-h);
+  /* min-width:160px 必须消失，否则空闲态收不成 32px 的球 */
+  min-width: 0;
+  max-width: none;
+  flex: none;
+  transition:
+    width 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s,
+    box-shadow 0.3s;
+}
+
+/* ---- idle：条收成 32px 圆球 ---- */
+.root[data-state='idle'] .track {
+  width: var(--orb);
+  height: var(--orb);
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* 读数：idle 下 opacity:0，且绝对定位不参与布局 —— 否则 116px 的根节点
+   会把 32px 的球挤到左边，球右缘就落不在席位上。设计稿定稿值：
+   right:14px; top:50%; translateY(-50%)。working / waiting 才淡入。 */
+.trigger {
+  position: relative;
+}
+
+.readout {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+
+.root[data-state='working'] .readout,
+.root[data-state='waiting'] .readout {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.root[data-state='idle'] .fill {
+  opacity: 0;
+}
+
+.root[data-state='idle'] .dsSpin {
+  width: var(--orb);
+  height: var(--orb);
+  animation: none;
+}
+
+.root[data-state='idle'] .dsBob {
+  animation: none;
+}
+
+.root[data-state='idle'] .dsImg {
+  box-shadow:
+    0 0 0 1px rgba(150, 210, 255, 0.55),
+    0 3px 10px rgba(6, 14, 34, 0.55),
+    0 0 22px rgba(122, 211, 242, 0.42);
+}
+
+.root[data-state='idle'] .dsSlot {
+  cursor: pointer;
+}
+
+.root[data-state='idle'] .dsSlot:hover .dsImg {
+  transform: scale(1.06);
+}
+
+/* 呼吸光晕：只存在于空闲态 */
+.halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78px;
+  height: 78px;
+  margin: -39px 0 0 -39px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(122, 211, 242, 0.24) 0%, rgba(122, 211, 242, 0) 68%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.root[data-state='idle'] .halo {
+  opacity: 1;
+  animation: breathe 4.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* ---- 墨蓝水体：与 waiting 的琥珀同特异性（0,3,0），只有源序能定胜负。
+   写在 waiting 段之前 = 琥珀赢 —— waiting 是「需要你确认」，必须压过
+   墨蓝这个身份色。改动本段位置前先读这条注释。 ---- */
+.root[data-ink='true'] .water {
+  background: linear-gradient(180deg, #6f7fd6 0%, #4a58a8 34%, #2c3568 72%, #1b2145 100%);
+}
+
+.root[data-ink='true'] .waveFront {
+  background: linear-gradient(180deg, #b9c4ff 0%, #7d8ce0 42%, #6f7fd6 100%);
+}
+
+.root[data-ink='true'] .waveFoam {
+  background: linear-gradient(180deg, #f2f4ff 0%, #dde2ff 55%, #b9c4ff 100%);
+}
+
+.root[data-ink='true'] .fill {
+  box-shadow: 6px 0 20px rgba(142, 162, 232, 0.34);
+}
+
+/* ---- waiting：动画全停 + 水转暖琥珀 ---- */
+.root[data-state='waiting'] .waveFoam,
+.root[data-state='waiting'] .waveFront,
+.root[data-state='waiting'] .dsSpin,
+.root[data-state='waiting'] .dsBob {
+  animation: none !important;
+}
+
+.root[data-state='waiting'] .water {
+  background: linear-gradient(180deg, #f3b46b 0%, #d98f3e 34%, #8a5620 72%, #5c3a16 100%);
+}
+
+.root[data-state='waiting'] .waveFront {
+  background: linear-gradient(180deg, #ffdca8 0%, #f0b06a 42%, #d98f3e 100%);
+}
+
+.root[data-state='waiting'] .waveFoam {
+  background: linear-gradient(180deg, #fff6e8 0%, #ffe6c4 55%, #f7cf9a 100%);
+}
+
+/* ---- .panel 改右锚：球只有 32px 宽，left:0 会向右溢出屏幕 ---- */
+.panel {
+  left: auto;
+  right: var(--fly-right, 0px);
+  top: calc(100% + 12px);
+}
+
+/* ============================================================
+   v0.3 · 菜单 + 角标（第 5、6 步）
+   表面 / 边框 / 阴影沿用宿主变量（与 .panel 一致），让菜单看起来就是宿主
+   自己的菜单；只有墨蓝强调色没有对应语义，按本文件惯例用 literal + fallback。
+   ============================================================ */
+
+/* 浮层兜底宽度：三个浮层都要，窄窗口下不至于横穿视口 */
+.menu,
+.dcard {
+  max-width: calc(100vw - 32px);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: var(--fly-right, 0px);
+  z-index: 6;
+  box-sizing: border-box;
+  width: 262px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--dsw-specific-menu);
+  box-shadow: var(--dsw-elevation-prominent);
+  transform-origin: top right;
+  transform: scale(0.94) translateY(-6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.16s,
+    visibility 0.18s;
+}
+
+.menu[data-open='true'] {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.menuHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 10px;
+}
+
+.menuPic {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.menuTxt {
+  min-width: 0;
+}
+
+.menuTitle {
+  display: block;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.menuSub {
+  display: block;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.menuSep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--dsw-alias-border-l1);
+}
+
+.menuCap {
+  padding: 2px 10px 4px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10.5px;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.menuItem {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--dsw-alias-fill-l1, rgba(127, 127, 127, 0.12));
+}
+
+.menuItem:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.menuItem > svg {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: 1px;
+  opacity: 0.75;
+}
+
+.menuMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuLabel {
+  display: block;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.menuHint {
+  display: block;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.menuKbd {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+/* 整个菜单里唯一带底色的条目 */
+.menuItemPrimary {
+  background: rgba(142, 162, 232, 0.18);
+}
+
+.menuItemPrimary:hover {
+  background: rgba(142, 162, 232, 0.28);
+}
+
+.menuItemPrimary > svg {
+  opacity: 1;
+  stroke: var(--dsw-static-blue-500, #3b82f6);
+}
+
+.menuItemPrimary .menuLabel {
+  font-weight: 600;
+}
+
+.menuError {
+  padding: 6px 10px 4px;
+  color: #e8a13c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ---- 角标：挂在球的右下角，绝对定位，不参与布局 ---- */
+.badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  z-index: 3;
+  display: none;
+  place-items: center;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  /* 把圆点从球上「切」出来的那圈，用头部表面色 */
+  border: 1.5px solid var(--dsw-specific-menu);
+}
+
+/* 红线：工作态她已经在转了，「今天写没写」是噪音，而且它挂在会移动的头像上 */
+.root[data-state='working'] .badge,
+.root[data-state='waiting'] .badge {
+  display: none !important;
+}
+
+.root[data-diary='unwritten'] .badge {
+  display: grid;
+  background: #e8a13c;
+  box-shadow: 0 0 8px rgba(232, 161, 60, 0.7);
+  animation: pulse 2.6s ease-in-out infinite;
+}
+
+.root[data-diary='written'] .badge {
+  display: grid;
+  background: rgba(92, 196, 138, 0.92);
+  box-shadow: 0 0 6px rgba(92, 196, 138, 0.5);
+}
+
+.badge svg {
+  width: 7px;
+  height: 7px;
+  fill: none;
+  stroke: #0a0f1e;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.root[data-diary='unwritten'] .badge svg {
+  display: none;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.86);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   v0.3 · 墨蓝水体（第 7 步）
+   写日记时水体转墨蓝 —— 不是装饰，它让「这条进度属于日记」在余光里就分得出来，
+   不用去读右端的读数。只换三处渐变 + 一处光晕；几何 / 波浪形状 / 头像一律不动。
+   ============================================================ */
+
+/* 墨蓝强调色：宿主没有这个语义（--dsw-alias-brand-* 那些 alias 到近黑中性色，
+   画出来是一坨灰），所以按本文件惯例用 raw literal + 宿主唯一的公开深浅钩子
+   body[data-ds-dark-theme]（挂载/移除见 dsh-client-ui-layout）。 */
+.root {
+  --ink: #4f6bd0;
+  --ink-soft: rgba(79, 107, 208, 0.14);
+}
+
+:global(body[data-ds-dark-theme]) .root {
+  --ink: #8ea2e8;
+  --ink-soft: rgba(142, 162, 232, 0.18);
+}
+
+/* 菜单里那个唯一带底色的条目也吃同一套强调色，不再是写死的 rgba */
+.menuItemPrimary {
+  background: var(--ink-soft);
+}
+
+.menuItemPrimary > svg {
+  stroke: var(--ink);
+}
+
+/* ============================================================
+   v0.3 · 日记卡片（第 8 步）
+   三个浮层里最宽的一个（396px），窄窗下最容易被推出视口右缘，
+   所以 right 也走 fitRight 实测；max-width 兜底在文件上半部分。
+   ============================================================ */
+
+.dcard {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: var(--fly-right, 0px);
+  z-index: 6;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 396px;
+  max-height: 344px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--dsw-specific-menu);
+  box-shadow: var(--dsw-elevation-prominent);
+  transform-origin: top right;
+  transform: scale(0.95) translateY(-6px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s;
+}
+
+.dcard[data-open='true'] {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dcardHead {
+  display: flex;
+  flex: none;
+  gap: 7px;
+  align-items: center;
+  padding: 11px 13px 10px;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.dcardDate {
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.dcardChip {
+  padding: 1.5px 7px;
+  border: 0.5px solid var(--dsw-alias-border-l2, var(--dsw-alias-border-l1));
+  border-radius: 20px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.dcardMeta {
+  margin-left: auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dcardBody {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 15px 6px;
+  overflow-y: auto;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dcardBody p {
+  margin: 0 0 11px;
+  font-size: 12.5px;
+  line-height: 1.92;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 那行 __MDASH__：右对齐的署名 */
+.dcardBody p.sign {
+  margin-top: 14px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  text-align: right;
+}
+
+.dcardNotice {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+}
+
+/* 结论带停在原文件的位置上，不挪到末尾 */
+.dcardConcl {
+  margin: 2px 0 12px;
+  padding: 10px 12px;
+  border-left: 2.5px solid var(--ink);
+  border-radius: 10px;
+  background: var(--ink-soft);
+}
+
+.dcardConclTitle {
+  margin-bottom: 5px;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.dcardConclList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dcardConclList li {
+  position: relative;
+  padding-left: 13px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.85;
+}
+
+.dcardConclList li::before {
+  content: '·';
+  position: absolute;
+  left: 2px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.dcardFoot {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 11px;
+  border-top: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.dcardBtn {
+  flex: none;
+  padding: 4px 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2, var(--dsw-alias-border-l1));
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.dcardBtn:hover {
+  background: var(--dsw-alias-fill-l1, rgba(127, 127, 127, 0.12));
+  color: var(--dsw-alias-label-primary);
+}
+
+.path {
+  min-width: 0;
+  max-width: 150px;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

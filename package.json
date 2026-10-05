@@ -1,7 +1,7 @@
 {
   "name": "dsh-progress-bar",
-  "version": "0.2.0",
-  "description": "Session-header progress badge for DeepSeek Harness: a real completion percentage from the session's todos projection, plus a read-only background-job list. Shows no percentage it cannot prove.",
+  "version": "0.3.3",
+  "description": "Frame-wide persistent progress widget for DeepSeek Harness: a todo completion percentage, a read-only background-job list, and a diary companion — write today's entry, read the last one, with its conclusions highlighted. Shows no number it cannot prove.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -39,7 +39,8 @@
         "@deepseek-ai/dsh-api-job-controller",
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-conversation",
-        "@deepseek-ai/dsh-client-ui-primitives"
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-ui-workspace"
       ]
     }
   },
@@ -68,11 +69,14 @@
     "@deepseek-ai/dsh-client-file-upload": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-locale": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-store": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-chat": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-session": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-workspace": "0.2.0-rc.2",
     "@deepseek-ai/dsh-commands": "0.2.0-rc.2",
     "@deepseek-ai/dsh-jobs": "0.2.0-rc.2",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
