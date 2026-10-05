@@ -17,7 +17,7 @@ DeepSeek Harness Web 客户端的**整帧常驻进度控件**：一条横放的 
 
 会话头部那个 22×4px 的小进度条被整体替换为 ds 波浪进度条。**纯 CSS 实现，没有引入任何动画库**：波纹用 SVG 路径当 `mask` 把渐变切成波浪形，动画只改 `transform` 走 GPU 合成层；断网可用（头像以 data URI 内联，产物仍是单个 `client.js`）。
 
-完整设计汇总页（实时演示 + 五进度态 + 三档尺寸 + 深浅主题 + 无白边对照）。**注意：这是 v0.2.0 时期的产物**，渲染的是 `reference/showcase.html` 那份独立设计文档，画的是「会话头部的一条进度条」，**不是 v0.3.x 的常驻球**；v0.3.x 的实机图见顶部与「图片资源」：
+v0.2.0 的完整设计汇总页（实时演示 + 五进度态 + 三档尺寸 + 深浅主题 + 无白边对照）。它渲染的是 `reference/showcase.html` 那份独立设计文档，画的是**当时**会话头部的那条进度条 —— 历史存档，属于 v0.2.0 这一节：
 
 ![设计汇总页（v0.2.0 设计文档）](docs/showcase.png)
 
@@ -124,18 +124,18 @@ root 作用域没有 `sessionId` prop，所以身份改从工作区选择器的 
 
 ## 图片资源
 
-`docs/` 下分两类图，**别把第二类当成本插件的界面**：
+`docs/` 下三类图，按**它们的归属版本**读，别把 v0.2.0 那张当成现在的界面：
 
 | 文件 | 内容 |
 |---|---|
-| `docs/screenshot-orb.png` | **实机**：非空白会话，球常驻在头部右上角（紧邻工具组） |
-| `docs/screenshot-orb-blank.png` | **实机**：空白会话（Hero 态），球同样常驻 |
-| `docs/screenshot-diary-card.png` | 夹具成图：日记卡片（结论高亮带 + 右对齐署名） |
-| `docs/screenshot-diary-card-narrow.png` | 夹具成图：窄窗下的日记卡片 |
-| `docs/showcase.png` | ⚠️ **v0.2.0 设计文档渲染图**，非 v0.3.x 界面 |
-| `docs/preview.png` | ⚠️ 同上，`showcase.png` 的首屏裁切 |
+| `docs/screenshot-orb.png` | **实机**（v0.3.x）：非空白会话，球常驻在头部右上角（紧邻工具组） |
+| `docs/screenshot-orb-blank.png` | **实机**（v0.3.x）：空白会话（Hero 态），球同样常驻 |
+| `docs/screenshot-diary-card.png` | 夹具成图（v0.3.x）：日记卡片（结论高亮带 + 右对齐署名） |
+| `docs/screenshot-diary-card-narrow.png` | 夹具成图（v0.3.x）：窄窗下的日记卡片 |
+| `docs/showcase.png` | **v0.2.0 设计文档渲染图**：那份设计汇总页整页 |
+| `docs/preview.png` | 同上，`showcase.png` 的首屏裁切 |
 
-后两张是把 `reference/showcase.html` 用本机 Edge 渲染出来的**设计稿成图**。它画的是 v0.2.0 的「会话头部一条进度条」，**与本插件的 v0.3.x 常驻球无关**，保留仅为存档。渲染脚本不随本仓库提供（它属于我的验证工程）。出图时做了两处裁剪：**移除汇总页的「03 设计稿」整节**（3.1 角色形象 / 3.2 头像取景 / 3.3 完整设计稿 / 3.4 可辨识度验证），以及文件清单里两行属于角色创作流水线的条目（`design-final-lite.html`、`_avatar.py`）。`reference/showcase.html` 原件**未改动**，仍保留完整设计过程。
+后两张是把 `reference/showcase.html` 用本机 Edge 渲染出来的**设计稿成图**，画的是 v0.2.0 当时那条头部进度条，是**有意保留的 v0.2.0 历史资料**（v0.2.0 那一节用的就是 `showcase.png`）。渲染脚本不随本仓库提供（它属于我的验证工程）。出图时做了两处裁剪：**移除汇总页的「03 设计稿」整节**（3.1 角色形象 / 3.2 头像取景 / 3.3 完整设计稿 / 3.4 可辨识度验证），以及文件清单里两行属于角色创作流水线的条目（`design-final-lite.html`、`_avatar.py`）。`reference/showcase.html` 原件**未改动**，仍保留完整设计过程。
 
 **实机截图**：`screenshot-orb*.png` 是**无头 Chrome 直连宿主 Web UI 的真实渲染截图**，裁的是右上角局部（442×80），**不是完整头部**。仍待补的是：
 
