@@ -4,7 +4,9 @@ DeepSeek Harness Web 客户端的**整帧常驻进度控件**：一条横放的 
 
 它常驻在整帧浮层上（`shell.overlay`），不随会话或面板消失：没有任务时是头部右上角一颗 **32px 的球**，有任务了才展开成波浪条。**空白会话（新建会话的 Hero 态）也照样常驻** —— 入口要一直在，只是那时没有数字可显示。
 
-![ds 波浪进度条](docs/preview.png)
+![ds 球常驻在会话头部右上角](docs/screenshot-orb.png)
+
+<sub>实机截图局部（无头 Chrome 直连宿主 Web UI）：ds 球常驻在会话头部右上角，紧邻工具组与窗口控件。更多见「图片资源」。</sub>
 
 > 一句话原则：**只显示能证明的数字。**
 > 百分比只有一个来源（会话的 `todos` 投影）。后台作业的 `progress` 是**字符串**（一行进度文案），它永远不会被换算成百分比，也不会和任务清单加总成"综合进度"。
@@ -15,9 +17,9 @@ DeepSeek Harness Web 客户端的**整帧常驻进度控件**：一条横放的 
 
 会话头部那个 22×4px 的小进度条被整体替换为 ds 波浪进度条。**纯 CSS 实现，没有引入任何动画库**：波纹用 SVG 路径当 `mask` 把渐变切成波浪形，动画只改 `transform` 走 GPU 合成层；断网可用（头像以 data URI 内联，产物仍是单个 `client.js`）。
 
-完整设计汇总页（实时演示 + 五进度态 + 三档尺寸 + 深浅主题 + 无白边对照）：
+完整设计汇总页（实时演示 + 五进度态 + 三档尺寸 + 深浅主题 + 无白边对照）。**注意：这是 v0.2.0 时期的产物**，渲染的是 `reference/showcase.html` 那份独立设计文档，画的是「会话头部的一条进度条」，**不是 v0.3.x 的常驻球**；v0.3.x 的实机图见顶部与「图片资源」：
 
-![设计汇总页](docs/showcase.png)
+![设计汇总页（v0.2.0 设计文档）](docs/showcase.png)
 
 ### 视觉参数（逐条取自 `reference/ds-wave-bar.html`，原型是权威）
 
@@ -53,9 +55,13 @@ DeepSeek Harness Web 客户端的**整帧常驻进度控件**：一条横放的 
 
 没有任务时它是 **32px 的球**，常驻在头部右上角（v0.3.2 起挂在整帧浮层上，见下节），不再整块消失；一旦有任务就展开成 **340×44 的水道**。三态由会话自身的信号驱动：`idle`（空闲）/ `working`（有任务或作业在跑）/ `waiting`（在等你确认一次操作）。
 
-| idle：32px 的球 | working：340×44 的水道 |
+两张都是实机截图，**都拍的是 idle 的裸球**，区别只在会话状态 —— 空白会话下球依然在，正是 v0.3.2 修的那件事：
+
+| idle：非空白会话（球在工具组旁） | idle：空白会话 Hero 态（球照样在） |
 |---|---|
-| ![常驻球](docs/preview.png) | ![展开水道](docs/showcase.png) |
+| ![常驻球](docs/screenshot-orb.png) | ![空白会话下的常驻球](docs/screenshot-orb-blank.png) |
+
+> 展开态（`working` 的 340×44 水道）目前**没有实机截图**，`docs/screenshot-panel.png` 仍是待补的。水道尺寸 340×44 由代码与设计稿定义，未在此处冒充实拍。
 
 ### 菜单
 
@@ -73,7 +79,7 @@ DeepSeek Harness Web 客户端的**整帧常驻进度控件**：一条横放的 
 |---|---|
 | ![日记卡片](docs/screenshot-diary-card.png) | ![窄窗](docs/screenshot-diary-card-narrow.png) |
 
-> 上面四张 `docs/` 图是**夹具成图**（仓库外的验证工程用真实组件 + 真实 CSS 管线渲染），不是实机截图。真机截图见下方「图片资源」。
+> 上面这两张日记卡片是**夹具成图**（仓库外的验证工程用真实组件 + 真实 CSS 管线渲染），不是实机截图；本节开头那两张常驻球才是实机。分类见下方「图片资源」。
 
 ---
 
@@ -118,22 +124,23 @@ root 作用域没有 `sessionId` prop，所以身份改从工作区选择器的 
 
 ## 图片资源
 
-`docs/` 下两张图都是把 `reference/showcase.html` 用本机 Edge **渲染出来的设计稿成图**（不是实机截图）：
+`docs/` 下分两类图，**别把第二类当成本插件的界面**：
 
 | 文件 | 内容 |
 |---|---|
-| `docs/preview.png` | 汇总页首屏：实时演示条（定格在 67%）+ 控制栏 |
-| `docs/showcase.png` | 汇总页整页：五进度态 / 三档尺寸 / 深浅主题 / 无白边对照 / 泳姿 |
 | `docs/screenshot-orb.png` | **实机**：非空白会话，球常驻在头部右上角（紧邻工具组） |
 | `docs/screenshot-orb-blank.png` | **实机**：空白会话（Hero 态），球同样常驻 |
+| `docs/screenshot-diary-card.png` | 夹具成图：日记卡片（结论高亮带 + 右对齐署名） |
+| `docs/screenshot-diary-card-narrow.png` | 夹具成图：窄窗下的日记卡片 |
+| `docs/showcase.png` | ⚠️ **v0.2.0 设计文档渲染图**，非 v0.3.x 界面 |
+| `docs/preview.png` | ⚠️ 同上，`showcase.png` 的首屏裁切 |
 
-渲染脚本不随本仓库提供（它属于我的验证工程）。出图时做了两处裁剪：**移除汇总页的「03 设计稿」整节**（3.1 角色形象 / 3.2 头像取景 / 3.3 完整设计稿 / 3.4 可辨识度验证），以及文件清单里两行属于角色创作流水线的条目（`design-final-lite.html`、`_avatar.py`）。`reference/showcase.html` 原件**未改动**，仍保留完整设计过程。
+后两张是把 `reference/showcase.html` 用本机 Edge 渲染出来的**设计稿成图**。它画的是 v0.2.0 的「会话头部一条进度条」，**与本插件的 v0.3.x 常驻球无关**，保留仅为存档。渲染脚本不随本仓库提供（它属于我的验证工程）。出图时做了两处裁剪：**移除汇总页的「03 设计稿」整节**（3.1 角色形象 / 3.2 头像取景 / 3.3 完整设计稿 / 3.4 可辨识度验证），以及文件清单里两行属于角色创作流水线的条目（`design-final-lite.html`、`_avatar.py`）。`reference/showcase.html` 原件**未改动**，仍保留完整设计过程。
 
-**实机截图**：`screenshot-orb.png` 与 `screenshot-orb-blank.png` 是**无头 Chrome 直连宿主 Web UI 的真实渲染截图**，裁的是右上角局部（442×80），**不是完整头部**。仍待补的是：
+**实机截图**：`screenshot-orb*.png` 是**无头 Chrome 直连宿主 Web UI 的真实渲染截图**，裁的是右上角局部（442×80），**不是完整头部**。仍待补的是：
 
 - `docs/screenshot.png` —— 完整头部（待补）
-- `docs/screenshot-panel.png` —— 展开态：任务清单 + 后台作业 + 进度条（待补）
-- `docs/screenshot-diary-card.png`、`docs/screenshot-diary-card-narrow.png` —— v0.3 日记卡片是**夹具成图**（真实组件 + 真实 CSS 管线 + 本机 Edge），不是实机截图
+- `docs/screenshot-panel.png` —— 展开态：任务清单 + 后台作业 + 340×44 水道（待补）
 
 `files` 字段里没有 `docs/`，所以 **npm 包里不带图** —— 图片只给 GitHub 上的 README 看，这是预期的。
 
